@@ -1,0 +1,4 @@
+SELECT shipment_id, origin, destination, carrier, expected_delivery_date, actual_delivery_date
+FROM shipments
+WHERE actual_delivery_date > expected_delivery_date
+ORDER BY actual_delivery_date DESC;
