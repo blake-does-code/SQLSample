@@ -1,0 +1,5 @@
+SELECT carrier_id, AVG(delivery_time) AS avg_delivery_time
+FROM shipments
+WHERE status = 'Delivered'
+GROUP BY carrier_id
+ORDER BY avg_delivery_time;
