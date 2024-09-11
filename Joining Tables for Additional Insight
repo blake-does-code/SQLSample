@@ -1,0 +1,5 @@
+SELECT s.shipment_id, c.customer_name, ca.carrier_name, s.origin, s.destination, s.shipment_date, s.status
+FROM shipments s
+JOIN customers c ON s.customer_id = c.customer_id
+JOIN carriers ca ON s.carrier_id = ca.carrier_id
+ORDER BY s.shipment_date DESC;
