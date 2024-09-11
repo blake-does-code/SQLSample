@@ -1,0 +1,4 @@
+SELECT shipment_id, origin, destination, carrier, shipment_date, status
+FROM shipments
+WHERE shipment_date BETWEEN '2023-01-01' AND '2023-12-31'
+ORDER BY shipment_date DESC;
