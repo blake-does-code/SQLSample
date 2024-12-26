@@ -1,0 +1,67 @@
+-- Step 1: Define shipments and their attributes using a Common Table Expression (CTE)
+WITH ShipmentData AS (
+    SELECT 
+        shipment_id,
+        origin,
+        destination,
+        delivery_deadline,
+        weight,
+        length,
+        width,
+        height,
+        carrier_id,
+        -- Calculate volume for each shipment
+        length * width * height AS volume,
+        -- Convert delivery deadline into a time window bucket (e.g., Morning, Afternoon)
+        CASE 
+            WHEN delivery_deadline::time < '12:00:00' THEN 'Morning'
+            WHEN delivery_deadline::time >= '12:00:00' AND delivery_deadline::time < '18:00:00' THEN 'Afternoon'
+            ELSE 'Evening'
+        END AS time_window
+    FROM shipments
+    WHERE status = 'Ready to Ship'
+),
+
+-- Step 2: Group shipments by destination and time window
+GroupedShipments AS (
+    SELECT 
+        destination,
+        time_window,
+        SUM(weight) AS total_weight,
+        SUM(volume) AS total_volume,
+        COUNT(shipment_id) AS shipment_count,
+        MIN(delivery_deadline) AS earliest_deadline,
+        MAX(delivery_deadline) AS latest_deadline
+    FROM ShipmentData
+    GROUP BY destination, time_window
+),
+
+-- Step 3: Identify feasible shipment groups that meet consolidation criteria
+FeasibleGroups AS (
+    SELECT 
+        destination,
+        time_window,
+        total_weight,
+        total_volume,
+        shipment_count,
+        earliest_deadline,
+        latest_deadline,
+        -- Check if the group exceeds the trailer's maximum weight or volume
+        CASE 
+            WHEN total_weight <= 40000 AND total_volume <= 26000 THEN 'Feasible'
+            ELSE 'Not Feasible'
+        END AS consolidation_status
+    FROM GroupedShipments
+)
+
+-- Step 4: Output feasible groups ready for consolidation
+SELECT 
+    destination,
+    time_window,
+    shipment_count,
+    total_weight,
+    total_volume,
+    consolidation_status
+FROM FeasibleGroups
+WHERE consolidation_status = 'Feasible'
+ORDER BY destination, time_window;
