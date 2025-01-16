@@ -1,0 +1,12 @@
+SELECT 
+    CarrierName,
+    AVG(DATEDIFF(DAY, PickupDate, DeliveryDate)) AS AvgDeliveryTime,
+    SUM(CASE WHEN DeliveryDate > ExpectedDeliveryDate THEN 1 ELSE 0 END) AS LateDeliveries,
+    COUNT(*) AS TotalShipments,
+    CAST(SUM(CASE WHEN DeliveryDate > ExpectedDeliveryDate THEN 1 ELSE 0 END) * 100.0 / COUNT(*) AS DECIMAL(5,2)) AS LateDeliveryPercentage
+FROM 
+    Shipments
+GROUP BY 
+    CarrierName
+ORDER BY 
+    LateDeliveryPercentage DESC;
